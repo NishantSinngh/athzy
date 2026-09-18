@@ -39,6 +39,7 @@ import {
   StaleBanner,
   HomeSkeleton,
 } from './components/HomeLayout';
+import { RefreshBar } from '../../components/RefreshBar';
 
 const EMPTY_ARRAY: any[] = [];
 
@@ -209,6 +210,7 @@ export const HomeScreen = ({ navigation }: any) => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      <RefreshBar active={refreshing || syncing} />
       <AmbientGlow />
       <ScrollView
         contentContainerStyle={[

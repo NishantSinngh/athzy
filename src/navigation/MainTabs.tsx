@@ -1,8 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { BlurView } from 'expo-blur';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -13,7 +12,13 @@ import Animated, {
 import { AnimatedIcon, type IconName } from '../components/AnimatedIcon';
 import { triggerHaptic } from '../components/PressableScale';
 import { theme } from '../theme';
-import { ChatInboxScreen, CommunityScreen, EventsListScreen, HomeScreen, VenueListScreen } from '../screens';
+import {
+  ChatInboxScreen,
+  CommunityScreen,
+  EventsListScreen,
+  HomeScreen,
+  VenueListScreen,
+} from '../screens';
 
 const Tab = createBottomTabNavigator();
 
@@ -43,7 +48,7 @@ const tabAccents: Record<string, string> = {
  * a white-vs-grey weight shift carry the selected state. Green is reserved for
  * primary actions elsewhere in the app, so it never appears here.
  */
-function TabItem({ route, focused, onPress, onLongPress, label, accessibilityLabel }: any) {
+const TabItem = React.memo(({ route, focused, options, navigation }: any) => {
   const progress = useSharedValue(focused ? 1 : 0);
   const press = useSharedValue(0);
 
@@ -54,29 +59,60 @@ function TabItem({ route, focused, onPress, onLongPress, label, accessibilityLab
   const iconStyle = useAnimatedStyle(() => ({
     transform: [
       { translateY: interpolate(progress.value, [0, 1], [0, -2]) },
-      { scale: interpolate(progress.value, [0, 1], [1, 1.05]) * interpolate(press.value, [0, 1], [1, 0.88]) },
+      {
+        scale:
+          interpolate(progress.value, [0, 1], [1, 1.05]) *
+          interpolate(press.value, [0, 1], [1, 0.88]),
+      },
     ],
   }));
 
   const labelStyle = useAnimatedStyle(() => ({
-    opacity: withTiming(interpolate(progress.value, [0, 1], [0.6, 1]), { duration: theme.motion.duration.fast }),
+    opacity: withTiming(interpolate(progress.value, [0, 1], [0.6, 1]), {
+      duration: theme.motion.duration.fast,
+    }),
     transform: [{ translateY: interpolate(progress.value, [0, 1], [0, -1]) }],
   }));
+
+  const label = options.tabBarLabel ?? options.title ?? route.name;
+  const accessibilityLabel = options.tabBarAccessibilityLabel ?? `${label} tab`;
+
+  const onPressIn = useCallback(() => {
+    press.value = withSpring(1, theme.motion.spring.press);
+  }, [press]);
+
+  const onPressOut = useCallback(() => {
+    press.value = withSpring(0, theme.motion.spring.press);
+  }, [press]);
+
+  const onPress = useCallback(() => {
+    if (!focused) triggerHaptic('selection');
+
+    const event = navigation.emit({
+      type: 'tabPress',
+      target: route.key,
+      canPreventDefault: true,
+    });
+
+    if (!focused && !event.defaultPrevented) {
+      navigation.navigate(route.name, route.params);
+    }
+  }, [focused, navigation, route.key, route.name, route.params]);
+
+  const onLongPress = useCallback(() => {
+    navigation.emit({ type: 'tabLongPress', target: route.key });
+  }, [navigation, route.key]);
 
   return (
     <Pressable
       style={styles.tabItem}
-      onPressIn={() => { press.value = withSpring(1, theme.motion.spring.press); }}
-      onPressOut={() => { press.value = withSpring(0, theme.motion.spring.press); }}
-      onPress={() => {
-        if (!focused) triggerHaptic('selection');
-        onPress();
-      }}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
+      onPress={onPress}
       onLongPress={onLongPress}
       accessibilityRole="tab"
       accessibilityState={{ selected: focused }}
       accessibilityLabel={accessibilityLabel}
-      // Kills the Android ripple that was bleeding outside the icon.
       android_ripple={null}
       hitSlop={6}
     >
@@ -94,7 +130,9 @@ function TabItem({ route, focused, onPress, onLongPress, label, accessibilityLab
         style={[
           styles.tabLabel,
           focused && styles.tabLabelActive,
-          focused && tabAccents[route.name] ? { color: tabAccents[route.name] } : null,
+          focused && tabAccents[route.name]
+            ? { color: tabAccents[route.name] }
+            : null,
           labelStyle,
         ]}
         numberOfLines={1}
@@ -103,67 +141,72 @@ function TabItem({ route, focused, onPress, onLongPress, label, accessibilityLab
       </Animated.Text>
     </Pressable>
   );
-}
+});
 
-function TabBar({ state, descriptors, navigation }: any) {
-  const insets = useSafeAreaInsets();
-
+const TabBar = React.memo(({ state, descriptors, navigation }: any) => {
   return (
-    <View style={[styles.barWrap, { paddingBottom: Math.max(insets.bottom, 10) }]}>
+    <View style={[styles.barWrap, { paddingBottom: 10 }]}>
       {/* Blur only lands on native; the solid backdrop underneath covers web. */}
-      {Platform.OS === 'web' ? null : <BlurView intensity={44} tint="dark" style={StyleSheet.absoluteFill} />}
-      <View style={styles.hairline} />
+      {Platform.OS === 'web' ? null : (
+        <BlurView intensity={44} tint="dark" style={StyleSheet.absoluteFill} />
+      )}
 
       <View style={styles.barRow}>
         {state.routes.map((route: any, index: number) => {
           const { options } = descriptors[route.key];
           const focused = state.index === index;
-          const label = options.tabBarLabel ?? options.title ?? route.name;
-
-          const onPress = () => {
-            const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-            if (!focused && !event.defaultPrevented) navigation.navigate(route.name, route.params);
-          };
 
           return (
             <TabItem
               key={route.key}
               route={route}
+              options={options}
               focused={focused}
-              label={label}
-              accessibilityLabel={options.tabBarAccessibilityLabel ?? `${label} tab`}
-              onPress={onPress}
-              onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
+              navigation={navigation}
             />
           );
         })}
       </View>
     </View>
   );
-}
+});
 
-export const MainTabs = () => (
-  <Tab.Navigator
-    screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: theme.colors.background } }}
-    tabBar={(props) => <TabBar {...props} />}
-  >
-    <Tab.Screen name="Home" component={HomeScreen} />
-    <Tab.Screen name="Events" component={EventsListScreen} options={{ tabBarLabel: 'Discover' }} />
-    <Tab.Screen name="Community" component={CommunityScreen} />
-    <Tab.Screen name="Chat" component={ChatInboxScreen} />
-    {/* Profile moved to the avatar in the Home header; venues earned the slot. */}
-    <Tab.Screen name="Venues" component={VenueListScreen} initialParams={{ tabRoot: true }} />
-  </Tab.Navigator>
-);
+export const MainTabs = () => {
+  const renderTabBar = useCallback((props: any) => <TabBar {...props} />, []);
+
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        sceneStyle: { backgroundColor: theme.colors.background },
+      }}
+      tabBar={renderTabBar}
+    >
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen
+        name="Events"
+        component={EventsListScreen}
+        options={{ tabBarLabel: 'Discover' }}
+      />
+      {/* <Tab.Screen name="Community" component={CommunityScreen} /> */}
+      <Tab.Screen name="Chat" component={ChatInboxScreen} />
+      {/* <Tab.Screen name="Venues" component={VenueListScreen} initialParams={{ tabRoot: true }} /> */}
+    </Tab.Navigator>
+  );
+};
 
 const styles = StyleSheet.create({
   barWrap: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
+    left: 40,
+    right: 40,
+    bottom: 20,
+    borderRadius: 40,
     paddingTop: 12,
-    backgroundColor: Platform.OS === 'web' ? theme.colors.surface : 'rgba(13,13,13,0.86)',
+    borderWidth: 1,
+    borderColor: theme.colors.borderSoft,
+    backgroundColor:
+      Platform.OS === 'web' ? theme.colors.surface : 'rgba(13,13,13,0.9)',
     overflow: 'hidden',
   },
   hairline: {
@@ -180,7 +223,7 @@ const styles = StyleSheet.create({
     minHeight: theme.hitTarget,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 4,
   },
   tabLabel: {
     ...theme.typography.caption,
