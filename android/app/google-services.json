@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "102611685324",
+    "project_id": "athzy-ddd7f",
+    "storage_bucket": "athzy-ddd7f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:102611685324:android:f92f0a0236fdf933d91769",
+        "android_client_info": {
+          "package_name": "com.athzy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDG4Y5CCWCxFfmiQ2rV9WOEl7E6T8gYujo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

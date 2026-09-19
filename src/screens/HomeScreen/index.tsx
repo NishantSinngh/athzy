@@ -40,6 +40,7 @@ import {
   HomeSkeleton,
 } from './components/HomeLayout';
 import { RefreshBar } from '../../components/RefreshBar';
+import BannerCarousel from './components/BannerCarousel';
 
 const EMPTY_ARRAY: any[] = [];
 
@@ -242,7 +243,7 @@ export const HomeScreen = ({ navigation }: any) => {
         />
 
         <SearchEntry onPress={onSearch} />
-
+        <BannerCarousel />
         {loading ? (
           <HomeSkeleton />
         ) : error && !feed ? (

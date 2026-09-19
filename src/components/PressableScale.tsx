@@ -74,8 +74,8 @@ export function PressableScale({
   return (
     <AnimatedPressable
       style={[style, animatedStyle]}
-      // onPressIn={handlePressIn}
-      // onPressOut={handlePressOut}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       disabled={disabled}
       {...rest}
     >

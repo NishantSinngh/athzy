@@ -10,7 +10,37 @@ import { BackendAPI } from '../api/backend';
 import { Button } from '../components/Button';
 import { theme } from '../theme';
 import { NotificationNavigation } from '../notifications/NotificationNavigation';
-import { BookingDetailsScreen, ChatChannelScreen, ConnectionsScreen, CreatePostScreen, EventDetailsScreen, EventRegisterScreen, EventTicketScreen, EventWorkspaceScreen, FullTicketScreen, LocationScreen, LoginScreen, MyBookingsScreen, NotificationsScreen, PostDetailsScreen, ProfileScreen, PublicProfileScreen, RegistrationSuccessScreen, RegistrationSummaryScreen, SearchScreen, SignUpScreen, SportsInterestScreen, SupportScreen, TournamentDetailsScreen, TournamentRegisterScreen, TournamentRegistrationSuccessScreen, TournamentRegistrationSummaryScreen, VenueBookingReviewScreen, VenueBookingSuccessScreen, VenueDetailsScreen } from '../screens';
+import {
+  BookingDetailsScreen,
+  ChatChannelScreen,
+  ConnectionsScreen,
+  CreatePostScreen,
+  EventDetailsScreen,
+  EventRegisterScreen,
+  EventTicketScreen,
+  EventWorkspaceScreen,
+  FullTicketScreen,
+  LocationScreen,
+  LoginScreen,
+  MyBookingsScreen,
+  NotificationsScreen,
+  PostDetailsScreen,
+  ProfileScreen,
+  PublicProfileScreen,
+  RegistrationSuccessScreen,
+  RegistrationSummaryScreen,
+  SearchScreen,
+  SignUpScreen,
+  SportsInterestScreen,
+  SupportScreen,
+  TournamentDetailsScreen,
+  TournamentRegisterScreen,
+  TournamentRegistrationSuccessScreen,
+  TournamentRegistrationSummaryScreen,
+  VenueBookingReviewScreen,
+  VenueBookingSuccessScreen,
+  VenueDetailsScreen,
+} from '../screens';
 
 const Stack = createNativeStackNavigator();
 
@@ -61,7 +91,7 @@ export const RootNavigator = ({ signedIn }: { signedIn: boolean }) => {
           screenOptions={{
             headerShown: false,
             contentStyle: { backgroundColor: theme.colors.background },
-            animation:'ios_from_right'
+            animation: 'ios_from_right',
           }}
         >
           <Stack.Screen name="Login" component={LoginScreen} />

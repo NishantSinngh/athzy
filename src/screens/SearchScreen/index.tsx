@@ -1,5 +1,18 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
@@ -57,16 +70,23 @@ export function SearchScreen({ navigation, route }: any) {
       BackendAPI.getTournaments({ take: 50 }),
       BackendAPI.getVenues(),
     ]);
-    if (e.status === 'fulfilled') setEvents((e.value.events || []).filter((item: any) => !item.tournament));
+    if (e.status === 'fulfilled')
+      setEvents((e.value.events || []).filter((item: any) => !item.tournament));
     if (t.status === 'fulfilled') setTournaments(t.value.tournaments || []);
     if (v.status === 'fulfilled') setVenues(v.value.venues || []);
-    if (e.status === 'rejected' && t.status === 'rejected' && v.status === 'rejected') {
+    if (
+      e.status === 'rejected' &&
+      t.status === 'rejected' &&
+      v.status === 'rejected'
+    ) {
       setError('Search is unavailable right now.');
     }
     setLoading(false);
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
   useEffect(() => {
     const timer = setTimeout(() => inputRef.current?.focus(), 250);
     return () => clearTimeout(timer);
@@ -83,18 +103,40 @@ export function SearchScreen({ navigation, route }: any) {
     const out: Hit[] = [];
     if (scope === 'All' || scope === 'Events') {
       events
-        .filter((item) => match(item.title, item.sport?.name, item.venue?.name, item.venue?.city))
-        .forEach((item) => out.push({ kind: 'event', id: item.id, item }));
+        .filter(item =>
+          match(
+            item.title,
+            item.sport?.name,
+            item.venue?.name,
+            item.venue?.city,
+          ),
+        )
+        .forEach(item => out.push({ kind: 'event', id: item.id, item }));
     }
     if (scope === 'All' || scope === 'Tournaments') {
       tournaments
-        .filter((item) => match(item.title, item.sport?.name, item.format, item.venue?.name, item.venue?.city))
-        .forEach((item) => out.push({ kind: 'tournament', id: item.id, item }));
+        .filter(item =>
+          match(
+            item.title,
+            item.sport?.name,
+            item.format,
+            item.venue?.name,
+            item.venue?.city,
+          ),
+        )
+        .forEach(item => out.push({ kind: 'tournament', id: item.id, item }));
     }
     if (scope === 'All' || scope === 'Venues') {
       venues
-        .filter((item) => match(item.name, item.city, item.address, (item.sports || []).join(' ')))
-        .forEach((item) => out.push({ kind: 'venue', id: item.id, item }));
+        .filter(item =>
+          match(
+            item.name,
+            item.city,
+            item.address,
+            (item.sports || []).join(' '),
+          ),
+        )
+        .forEach(item => out.push({ kind: 'venue', id: item.id, item }));
     }
     return out;
   }, [events, normalized, scope, tournaments, venues]);
@@ -102,9 +144,9 @@ export function SearchScreen({ navigation, route }: any) {
   const counts = useMemo(
     () => ({
       All: hits.length,
-      Events: hits.filter((h) => h.kind === 'event').length,
-      Tournaments: hits.filter((h) => h.kind === 'tournament').length,
-      Venues: hits.filter((h) => h.kind === 'venue').length,
+      Events: hits.filter(h => h.kind === 'event').length,
+      Tournaments: hits.filter(h => h.kind === 'tournament').length,
+      Venues: hits.filter(h => h.kind === 'venue').length,
     }),
     [hits],
   );
@@ -112,21 +154,28 @@ export function SearchScreen({ navigation, route }: any) {
   const remember = (value: string) => {
     const trimmed = value.trim();
     if (!trimmed) return;
-    recentMemory = [trimmed, ...recentMemory.filter((item) => item !== trimmed)].slice(0, 6);
+    recentMemory = [
+      trimmed,
+      ...recentMemory.filter(item => item !== trimmed),
+    ].slice(0, 6);
     setRecents(recentMemory);
   };
 
   const open = (hit: Hit) => {
     remember(query);
-    if (hit.kind === 'event') navigation.navigate('EventDetails', { eventId: hit.id });
-    else if (hit.kind === 'tournament') navigation.navigate('TournamentDetails', { tournamentId: hit.id });
+    if (hit.kind === 'event')
+      navigation.navigate('EventDetails', { eventId: hit.id });
+    else if (hit.kind === 'tournament')
+      navigation.navigate('TournamentDetails', { tournamentId: hit.id });
     else navigation.navigate('VenueDetails', { venueId: hit.id });
   };
 
   /** Suggestions shown before the user types anything. */
   const suggestions = useMemo(() => {
     const sports = new Set<string>();
-    [...events, ...tournaments].forEach((item) => item.sport?.name && sports.add(item.sport.name));
+    [...events, ...tournaments].forEach(
+      item => item.sport?.name && sports.add(item.sport.name),
+    );
     return [...sports].slice(0, 6);
   }, [events, tournaments]);
 
@@ -165,15 +214,23 @@ export function SearchScreen({ navigation, route }: any) {
               accessibilityRole="button"
               accessibilityLabel="Clear search"
             >
-              <Ionicons name="close-circle" size={19} color={theme.colors.textMuted} />
+              <Ionicons
+                name="close-circle"
+                size={19}
+                color={theme.colors.textMuted}
+              />
             </PressableScale>
           ) : null}
         </View>
       </View>
 
       {normalized ? (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scopes}>
-          {scopes.map((item) => (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.scopes}
+        >
+          {scopes.map(item => (
             <FilterChip
               key={item}
               accent={theme.accents.discover}
@@ -186,7 +243,11 @@ export function SearchScreen({ navigation, route }: any) {
         </ScrollView>
       ) : null}
 
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         {!normalized ? (
           <Animated.View entering={FadeIn.duration(theme.motion.duration.fast)}>
             {recents.length ? (
@@ -194,7 +255,10 @@ export function SearchScreen({ navigation, route }: any) {
                 <View style={styles.headingRow}>
                   <Text style={styles.heading}>Recent</Text>
                   <PressableScale
-                    onPress={() => { recentMemory = []; setRecents([]); }}
+                    onPress={() => {
+                      recentMemory = [];
+                      setRecents([]);
+                    }}
                     haptic="selection"
                     hitSlop={8}
                     accessibilityRole="button"
@@ -203,7 +267,7 @@ export function SearchScreen({ navigation, route }: any) {
                     <Text style={styles.clear}>Clear</Text>
                   </PressableScale>
                 </View>
-                {recents.map((item) => (
+                {recents.map(item => (
                   <PressableScale
                     key={item}
                     style={styles.recent}
@@ -212,9 +276,20 @@ export function SearchScreen({ navigation, route }: any) {
                     accessibilityRole="button"
                     accessibilityLabel={`Search ${item}`}
                   >
-                    <Ionicons name="time-outline" size={17} color={theme.colors.textMuted} />
-                    <Text style={styles.recentText} numberOfLines={1}>{item}</Text>
-                    <Ionicons name="arrow-up-outline" size={15} color={theme.colors.textMuted} style={styles.recentArrow} />
+                    <Ionicons
+                      name="time-outline"
+                      size={17}
+                      color={theme.colors.textMuted}
+                    />
+                    <Text style={styles.recentText} numberOfLines={1}>
+                      {item}
+                    </Text>
+                    <Ionicons
+                      name="arrow-up-outline"
+                      size={15}
+                      color={theme.colors.textMuted}
+                      style={styles.recentArrow}
+                    />
                   </PressableScale>
                 ))}
               </>
@@ -224,12 +299,15 @@ export function SearchScreen({ navigation, route }: any) {
               <>
                 <Text style={styles.heading}>Browse by sport</Text>
                 <View style={styles.suggestions}>
-                  {suggestions.map((item) => (
+                  {suggestions.map(item => (
                     <PressableScale
                       key={item}
                       style={styles.suggestion}
                       scaleTo={0.94}
-                      onPress={() => { triggerHaptic('selection'); setQuery(item); }}
+                      onPress={() => {
+                        triggerHaptic('selection');
+                        setQuery(item);
+                      }}
                       accessibilityRole="button"
                       accessibilityLabel={`Search ${item}`}
                     >
@@ -240,12 +318,18 @@ export function SearchScreen({ navigation, route }: any) {
               </>
             ) : null}
 
-            {loading ? <View style={styles.loadingHint}><ActivityIndicator color={theme.colors.textMuted} /></View> : null}
+            {loading ? (
+              <View style={styles.loadingHint}>
+                <ActivityIndicator color={theme.colors.textMuted} />
+              </View>
+            ) : null}
           </Animated.View>
         ) : loading ? (
           <View style={styles.list}>
-            {[0, 1, 2, 3].map((key) => (
-              <View key={key} style={styles.skeletonCard}><SkeletonRow avatarSize={54} /></View>
+            {[0, 1, 2, 3].map(key => (
+              <View key={key} style={styles.skeletonCard}>
+                <SkeletonRow avatarSize={54} />
+              </View>
             ))}
           </View>
         ) : error ? (
@@ -270,7 +354,9 @@ export function SearchScreen({ navigation, route }: any) {
             {hits.map((hit, index) => (
               <Animated.View
                 key={`${hit.kind}-${hit.id}`}
-                entering={FadeInDown.delay(Math.min(index, 8) * theme.motion.stagger).duration(theme.motion.duration.normal)}
+                entering={FadeInDown.delay(
+                  Math.min(index, 8) * theme.motion.stagger,
+                ).duration(theme.motion.duration.normal)}
               >
                 <ResultRow hit={hit} onPress={() => open(hit)} />
               </Animated.View>
@@ -289,15 +375,22 @@ function ResultRow({ hit, onPress }: { hit: Hit; onPress: () => void }) {
   const isVenue = hit.kind === 'venue';
   const title = isVenue ? item.name : item.title;
   const meta = isVenue
-    ? [item.city, (item.sports || []).slice(0, 2).join(' · ')].filter(Boolean).join(' · ')
-    : [formatDayBadge(item.startsAt), item.venue?.name].filter(Boolean).join(' · ');
+    ? [item.city, (item.sports || []).slice(0, 2).join(' · ')]
+        .filter(Boolean)
+        .join(' · ')
+    : [formatDayBadge(item.startsAt), item.venue?.name]
+        .filter(Boolean)
+        .join(' · ');
   const trailing = isVenue
     ? `${formatMoney(item.basePriceMinor, item.currency)}/hr`
     : item.registrationFeeMinor
-      ? formatMoney(item.registrationFeeMinor + (item.serviceFeeMinor || 0), item.currency)
-      : item.paymentPolicy === 'FREE' || !item.totalFeeMinor
-        ? 'Free'
-        : formatMoney(item.totalFeeMinor, item.currency);
+    ? formatMoney(
+        item.registrationFeeMinor + (item.serviceFeeMinor || 0),
+        item.currency,
+      )
+    : item.paymentPolicy === 'FREE' || !item.totalFeeMinor
+    ? 'Free'
+    : formatMoney(item.totalFeeMinor, item.currency);
 
   return (
     <PressableScale
@@ -309,22 +402,40 @@ function ResultRow({ hit, onPress }: { hit: Hit; onPress: () => void }) {
     >
       <AppImage
         uri={item.imageUrl}
-        fallback={isVenue ? 'venue' : hit.kind === 'tournament' ? 'tournament' : 'event'}
+        fallback={
+          isVenue ? 'venue' : hit.kind === 'tournament' ? 'tournament' : 'event'
+        }
         style={styles.rowImage}
       />
       <View style={styles.rowCopy}>
         <View style={styles.rowTop}>
-          <Text style={styles.rowTitle} numberOfLines={1}>{title}</Text>
+          <Text style={styles.rowTitle} numberOfLines={1}>
+            {title}
+          </Text>
           <Badge
-            label={hit.kind === 'tournament' ? 'Tournament' : hit.kind === 'venue' ? 'Venue' : 'Event'}
+            label={
+              hit.kind === 'tournament'
+                ? 'Tournament'
+                : hit.kind === 'venue'
+                ? 'Venue'
+                : 'Event'
+            }
             tone="neutral"
             caps={false}
           />
         </View>
-        <Text style={styles.rowMeta} numberOfLines={1}>{meta}</Text>
-        <Text style={[styles.rowTrailing, { color: accent.base }]}>{trailing}</Text>
+        <Text style={styles.rowMeta} numberOfLines={1}>
+          {meta}
+        </Text>
+        <Text style={[styles.rowTrailing, { color: accent.base }]}>
+          {trailing}
+        </Text>
       </View>
-      <Ionicons name="chevron-forward" size={18} color={theme.colors.textMuted} />
+      <Ionicons
+        name="chevron-forward"
+        size={18}
+        color={theme.colors.textMuted}
+      />
     </PressableScale>
   );
 }
@@ -361,17 +472,53 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
-  input: { flex: 1, color: theme.colors.text, fontFamily: theme.font.regular, fontSize: 15, padding: 0 },
+  input: {
+    flex: 1,
+    color: theme.colors.text,
+    fontFamily: theme.font.regular,
+    fontSize: 15,
+    padding: 0,
+  },
 
-  scopes: { gap: theme.spacing.s, paddingHorizontal: theme.spacing.gutter, paddingBottom: theme.spacing.m },
-  content: { paddingHorizontal: theme.spacing.gutter, paddingBottom: theme.spacing.xxl },
+  scopes: {
+    gap: theme.spacing.s,
+    paddingHorizontal: theme.spacing.gutter,
+    paddingBottom: theme.spacing.m,
+  },
+  content: {
+    paddingHorizontal: theme.spacing.gutter,
+    paddingBottom: theme.spacing.xxl,
+  },
 
-  headingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing.m },
-  heading: { ...theme.typography.h3, fontSize: 16, marginTop: theme.spacing.m, marginBottom: theme.spacing.s },
-  clear: { ...theme.typography.caption, color: theme.colors.primary, fontFamily: theme.font.bold },
+  headingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: theme.spacing.m,
+  },
+  heading: {
+    ...theme.typography.h3,
+    fontSize: 16,
+    marginTop: theme.spacing.m,
+    marginBottom: theme.spacing.s,
+  },
+  clear: {
+    ...theme.typography.caption,
+    color: theme.colors.primary,
+    fontFamily: theme.font.bold,
+  },
 
-  recent: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.m, minHeight: 48 },
-  recentText: { ...theme.typography.bodySmall, color: theme.colors.text, flex: 1 },
+  recent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.m,
+    minHeight: 48,
+  },
+  recentText: {
+    ...theme.typography.bodySmall,
+    color: theme.colors.text,
+    flex: 1,
+  },
   recentArrow: { transform: [{ rotate: '45deg' }] },
 
   suggestions: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.s },
@@ -384,7 +531,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
-  suggestionText: { ...theme.typography.caption, color: theme.colors.text, fontFamily: theme.font.semibold },
+  suggestionText: {
+    ...theme.typography.caption,
+    color: theme.colors.text,
+    fontFamily: theme.font.semibold,
+  },
 
   loadingHint: { paddingVertical: theme.spacing.xl, alignItems: 'center' },
 
@@ -407,7 +558,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
-  rowImage: { width: 60, height: 60, borderRadius: theme.borderRadius.l, backgroundColor: theme.colors.surfaceLight },
+  rowImage: {
+    width: 60,
+    height: 60,
+    borderRadius: theme.borderRadius.l,
+    backgroundColor: theme.colors.surfaceLight,
+  },
   rowCopy: { flex: 1, minWidth: 0, gap: 3 },
   rowTop: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.s },
   rowTitle: { ...theme.typography.title, fontSize: 14, flexShrink: 1 },
