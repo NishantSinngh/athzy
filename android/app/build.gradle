@@ -97,6 +97,14 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            Properties localProperties = new Properties()
+            localProperties.load(new FileInputStream(rootProject.file("local.properties")))
+            storeFile file(localProperties["MYAPP_STORE_FILE"].toString())
+            storePassword localProperties["MYAPP_STORE_PASSWORD"].toString()
+            keyAlias localProperties["MYAPP_KEY_ALIAS"].toString()
+            keyPassword localProperties["MYAPP_KEY_PASSWORD"].toString()
+        }
     }
     buildTypes {
         debug {
