@@ -33,7 +33,8 @@ export function ConnectionsScreen({ navigation }: any) {
     try {
       setError('');
       const result = await BackendAPI.getConnections();
-      setConnections(result.connections);
+      // Added a fallback to ensure the state shape remains consistent
+      setConnections(result.connections || { incoming: [], outgoing: [], accepted: [] });
     } catch (requestError: any) {
       setError(requestError.message || 'Unable to load connections.');
     } finally {
@@ -140,7 +141,7 @@ export function ConnectionsScreen({ navigation }: any) {
           />
         ) : (
           <>
-            {connections.incoming.length ? (
+            {connections?.incoming?.length ? (
               <Section title="Requests" count={connections.incoming.length} highlight>
                 {connections.incoming.map((item, index) => (
                   <PersonRow
@@ -180,7 +181,7 @@ export function ConnectionsScreen({ navigation }: any) {
               </Section>
             ) : null}
 
-            {connections.outgoing.length ? (
+            {connections?.outgoing?.length ? (
               <Section title="Sent requests" count={connections.outgoing.length}>
                 {connections.outgoing.map((item, index) => (
                   <PersonRow
@@ -194,8 +195,8 @@ export function ConnectionsScreen({ navigation }: any) {
               </Section>
             ) : null}
 
-            <Section title="Your network" count={connections.accepted.length}>
-              {connections.accepted.length ? (
+            <Section title="Your network" count={connections?.accepted?.length || 0}>
+              {connections?.accepted?.length ? (
                 connections.accepted.map((item, index) => (
                   <PersonRow
                     key={item.id}
